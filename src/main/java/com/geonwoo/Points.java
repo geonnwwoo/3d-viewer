@@ -22,6 +22,8 @@ public class Points extends JPanel implements ActionListener {
     private Vector initialCameraPosition;
     private double angle;
     private Timer timer;
+    private int fps;
+    private int size;
     
     public Points(String pointsFile, String cameraFile) {
         points = loadPoints(pointsFile);
@@ -29,8 +31,11 @@ public class Points extends JPanel implements ActionListener {
         angle = 0;
         
         camera = new Camera(initialCameraPosition, 60);
-        
-        timer = new Timer(16, this); // ~60 FPS
+    
+        fps=60;
+        size=2;
+
+        timer = new Timer((int)fps/16, this);  // fps/16 gives the approximate fps
         timer.start();
     }
     
@@ -100,7 +105,7 @@ public class Points extends JPanel implements ActionListener {
         for (Vector point : points) {
             double[] coords = camera.project(point, getWidth(), getHeight());
             if (coords != null) {
-                g.fillOval((int)coords[0] - 2, (int)coords[1] - 2, 4, 4);
+                g.fillOval((int)coords[0] - 2, (int)coords[1] - 2, size, size);
             }
         }
         
