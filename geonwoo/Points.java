@@ -1,6 +1,7 @@
 import java.awt.Color;
 import java.awt.Graphics;
 
+import java.awt.event.KeyEvent;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,7 +21,8 @@ public class Points extends JPanel implements ActionListener {
     private Timer timer;
     private int fps;
     private int size;
-    private boolean isXPressed = false, isYPressed=false, isZPressed=false;
+    private boolean isHPressed = false, isJPressed=false, isKPressed=false, isLPressed=false
+    , isPlusPressed=false, isMinusPressed=false, isOPressed=false;
     
     public Points(String pointsFile, String cameraFile) {
         points = loadPoints(pointsFile);
@@ -29,69 +31,138 @@ public class Points extends JPanel implements ActionListener {
         
         camera = new Camera(initialCameraPosition, 60);
     
-        fps=60;
+        fps=120;
         size=2;
 
 
-        // 1. Map the "X" key press
-        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("X"), "pressX");
-        this.getActionMap().put("pressX", new AbstractAction() {
+        // 1. Map the "H" key press
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("H"), "pressH");
+        this.getActionMap().put("pressH", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                isXPressed = true;
+                isHPressed = true;
             }
         });
 
-        // 2. Map the "X" key release
-        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("released X"), "releaseX");
-        this.getActionMap().put("releaseX", new AbstractAction() {
+        // 2. Map the "H" key release
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("released H"), "releaseH");
+        this.getActionMap().put("releaseH", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                isXPressed = false;
+                isHPressed = false;
             }
         });
 
-        // 1. Map the "Y" key press
-        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("Y"), "pressY");
-        this.getActionMap().put("pressY", new AbstractAction() {
+        // 1. Map the "J" key press
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("J"), "pressJ");
+        this.getActionMap().put("pressJ", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                isYPressed = true;
+                isJPressed = true;
             }
         });
 
-        // 2. Map the "Y" key release
-        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("released Y"), "releaseY");
-        this.getActionMap().put("releaseY", new AbstractAction() {
+        // 2. Map the "J" key release
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("released J"), "releaseJ");
+        this.getActionMap().put("releaseJ", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                isYPressed = false;
+                isJPressed = false;
             }
         });
 
-        // 1. Map the "Z" key press
-        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("Z"), "pressZ");
-        this.getActionMap().put("pressZ", new AbstractAction() {
+        // 1. Map the "K" key press
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("K"), "pressK");
+        this.getActionMap().put("pressK", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                isZPressed = true;
+                isKPressed = true;
             }
         });
 
-        // 2. Map the "Z" key release
-        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("released Z"), "releaseZ");
-        this.getActionMap().put("releaseZ", new AbstractAction() {
+        // 2. Map the "K" key release
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("released K"), "releaseK");
+        this.getActionMap().put("releaseK", new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                isZPressed = false;
+                isKPressed = false;
             }
         });
 
 
+        // 1. Map the "L" key press
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("L"), "pressL");
+        this.getActionMap().put("pressL", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                isLPressed = true;
+            }
+        });
 
+        // 2. Map the "L" key release
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("released L"), "releaseL");
+        this.getActionMap().put("releaseL", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                isLPressed = false;
+            }
+        });
 
+        // 1. Map the "=" (Plus) key press
+        // Parameters: keyCode, modifiers (0 = none), onKeyRelease (false = press)
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, 0, false), "press=");
+        this.getActionMap().put("press=", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                isPlusPressed = true;
+            }
+        });
+
+        // 2. Map the "=" (Plus) key release
+        // Parameters: keyCode, modifiers (0 = none), onKeyRelease (true = release)
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, 0, true), "release=");
+        this.getActionMap().put("release=", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                isPlusPressed = false;
+            }
+        });
+
+        // 3. Map the "-" (Minus) key press
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, 0, false), "press-");
+        this.getActionMap().put("press-", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                isMinusPressed = true;
+            }
+        });
+
+        // 4. Map the "-" (Minus) key release
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, 0, true), "release-");
+        this.getActionMap().put("release-", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                isMinusPressed = false;
+            }
+        });
+
+        
+        // 1. Map the "O" key press
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("O"), "pressO");
+        this.getActionMap().put("pressO", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                isOPressed = true;
+            }
+        });
+
+        // 2. Map the "O" key release
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("released O"), "releaseO");
+        this.getActionMap().put("releaseO", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                isOPressed = false;
+            }
+        });
 
 
 
 
 
         timer = new Timer((int)fps/16, e-> {
-            if (isXPressed) {incX();}
-            if (isYPressed) {incY();}
+            if (isHPressed) {incX(-1);}
+            if (isJPressed) {incY(-1);}
+            if (isKPressed) {incY(1);}
+            if (isLPressed) {incX(1);}
+            if (isPlusPressed) {incCam(1);}
+            if (isMinusPressed) {incCam(-1);}
+            if (isOPressed) {reset();}
             repaint();
         });  // fps/16 gives the approximate fps
         timer.start();
@@ -175,50 +246,56 @@ public class Points extends JPanel implements ActionListener {
             camera.getPosition().getz()), 10, 40);
     }
 
-    public void incX() {
-        angle+=0.01;
+    public void incX(int dir) {
+        // H/L: Rotate left/right around Y-axis (horizontal rotation)
+        if (dir > 0) { 
+            angle += 0.01; 
+        } else { 
+            angle -= 0.01; 
+        }
 
-        double radius = Math.sqrt(
-        initialCameraPosition.getx() * initialCameraPosition.getx() + 
-        initialCameraPosition.getz() * initialCameraPosition.getz()
-        );
-        double y = initialCameraPosition.gety(); // Keep same height
+        Vector pos = camera.getPosition();
+        double radius = Math.sqrt(pos.getx() * pos.getx() + pos.getz() * pos.getz());
+        double y = pos.gety();
         
-        // Rotate camera around origin
         double x = radius * Math.cos(angle);
         double z = radius * Math.sin(angle);
         
         camera.setPosition(new Vector(x, y, z));
-        repaint();
     }
-    public void incY() {
-        camera.setPosition(new Vector(camera.getPosition().getx(), camera.getPosition().gety()+1, camera.getPosition().getz()));
+    
+    public void incY(int dir) {
+        // J/K: Move camera up/down (vertical movement)
+        Vector pos = camera.getPosition();
+        double deltaY = dir * 0.1;
+        camera.setPosition(new Vector(pos.getx(), pos.gety() + deltaY, pos.getz()));
     }
-    public void incZ() {
-        camera.setPosition(new Vector(camera.getPosition().getx(), camera.getPosition().gety(),camera.getPosition().getz()+1));
+
+    public void incCam(int dir) {
+      Vector pos = camera.getPosition();
+      
+      // Move camera along the direction vector from origin to camera
+      double scale = 1.0 + (dir * 0.01); // 5% closer or farther each frame
+      
+      double newX = pos.getx() * scale;
+      double newY = pos.gety() * scale;
+      double newZ = pos.getz() * scale;
+      
+      // Optional: add limits
+      double newDistance = Math.sqrt(newX * newX + newY * newY + newZ * newZ);
+      if (newDistance < 0.2 || newDistance > 80.0) {
+          return; // Don't zoom if out of bounds
+      }
+      
+      camera.setPosition(new Vector(newX, newY, newZ)); 
     }
-   
+
+    public void reset() {
+        camera.setPosition(loadInitialCameraPosition("camera.txt"));
+    }
 
 
     public void actionPerformed(ActionEvent e) {
-        //angle += 0.02; // Rotation speed
-       
-        
-        
-
-
-        // Calculate radius from initial position
-        double radius = Math.sqrt(
-            initialCameraPosition.getx() * initialCameraPosition.getx() + 
-            initialCameraPosition.getz() * initialCameraPosition.getz()
-        );
-        double y = initialCameraPosition.gety(); // Keep same height
-        
-        // Rotate camera around origin
-        double x = radius * Math.cos(angle);
-        double z = radius * Math.sin(angle);
-        
-        camera.setPosition(new Vector(x, y, z));
         repaint();
     }
     
