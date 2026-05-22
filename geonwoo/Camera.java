@@ -7,7 +7,7 @@ public class Camera {
         this.fov = fov;
     }
     public Camera() {
-        this(new Vector(0, 5, 0), 60);
+        this(new Vector(0,5,0), 60);
     }
     
     public Vector getPosition() { return position; }
@@ -17,8 +17,8 @@ public class Camera {
     public void setFov(double fov) { this.fov = fov; }
     
     public double[] project(Vector point, int screenWidth, int screenHeight) {
-        Vector forward = new Vector(0, 0, 0).subtract(this.position).normalize();
-        Vector worldUp = new Vector(0, 1, 0);
+        Vector forward = new Vector(0,0,0).subtract(this.position).normalize();
+        Vector worldUp = new Vector(0,1,0);
         Vector right = forward.cross(worldUp).normalize();
         Vector up = right.cross(forward).normalize();
         Vector translated = point.subtract(this.position);
@@ -36,10 +36,10 @@ public class Camera {
         double projectedX=(x*projectionPlaneDistance)/z;
         double projectedY=(y*projectionPlaneDistance)/z;
         
-        double aspectRatio=(double)screenWidth/screenHeight;
+        double aspectRatio=(double) screenWidth/screenHeight;
         
-        int screenX = (int) ((projectedX / aspectRatio + 1.0) * screenWidth / 2.0);
-        int screenY = (int) ((1.0 - projectedY) * screenHeight / 2.0);
+        int screenX = (int) ((projectedX/aspectRatio+1.0)*screenWidth/2.0);
+        int screenY = (int) ((1.0-projectedY)*screenHeight/2.0);
         
         return new double[] {screenX, screenY};
     }
