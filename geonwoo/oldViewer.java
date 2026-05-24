@@ -11,21 +11,18 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Comparator;
 
 public class Viewer extends JPanel implements ActionListener {
     //input filenames. POINTSFILE contains point data, CAMERAFILE contains the original coordinates for the camera
     private static String CAMERAFILE="camera.txt";
     private static String POINTSFILE="bunny.txt";
     private static String LINESFILE="bunny_lines.txt";
-    private static String MESHFILE="bunny_mesh.txt";
     
     private int lastMouseX, lastMouseY; // mouse drag
     private double panX=215.0, panY=299.0;
     private Camera camera;
     private List<Vector> points;
     private List<int[]> lines; // pairs of points
-    private List<int[]> mesh; // triangular faces (triplets of point indices)
     private Vector camPos;
     private Timer timer;
     private double theta; // theta and phi for azimuth altitude coordinates
@@ -36,10 +33,9 @@ public class Viewer extends JPanel implements ActionListener {
     private boolean isHPressed = false, isJPressed=false, isKPressed=false, isLPressed=false
     , isPlusPressed=false, isMinusPressed=false, isOPressed=false;
     
-    public Viewer(String pointsFile, String cameraFile, String linesFile, String meshFile) {
+    public Viewer(String pointsFile, String cameraFile,String linesFile) {
         points=load(pointsFile);
         lines = loadLines(linesFile);
-        mesh = loadMesh(meshFile);
         camPos=loadCamPos(cameraFile);
         camera=new Camera(camPos, 60);
         fps=30;
@@ -156,8 +152,7 @@ public class Viewer extends JPanel implements ActionListener {
             }
         });
 
-        int delay=1000/fps;
-        timer = new Timer(1, e-> {
+        timer = new Timer((int)fps/16, e-> {
             if (isHPressed) {incX(-1);}
             if (isJPressed) {incY(-1);}
             if (isKPressed) {incY(1);}
@@ -166,7 +161,7 @@ public class Viewer extends JPanel implements ActionListener {
             if (isMinusPressed) {incCam(-1);}
             if (isOPressed) {reset();}
             repaint();
-        });  // approximate fps? dunno
+        });  // fps/16 gives the approximate fps
         timer.start();
     }
     
@@ -213,7 +208,7 @@ public class Viewer extends JPanel implements ActionListener {
             //System.err.println("ERROR DURING loadCamPos() method: "+e.getMessage());
             //e.printStackTrace();
         }
-        return new Vector(5,0,0); // Default camera position camPos
+        return new Vector(1,0,0); // Default camera position camPos
     }
 
     private void update() {
@@ -227,7 +222,7 @@ public class Viewer extends JPanel implements ActionListener {
         List<int[]> result = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(getClass().getClassLoader().getResourceAsStream(filename)))) {
             String line;
-            while ((line=br.readLine()) != null) {
+            while ((line = br.readLine()) != null) {
                 line = line.trim();
                 if (line.isEmpty() || line.startsWith("#")) continue;
                 String[] parts = line.split("\\s+");
@@ -245,118 +240,35 @@ public class Viewer extends JPanel implements ActionListener {
         return result;
     }
 
-    private List<int[]> loadMesh(String filename) {
-        List<int[]> result = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(getClass().getClassLoader().getResourceAsStream(filename)))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) continue;
-                String[] parts = line.split("\\s+");
-                // Assuming mesh.txt contains three integers per line (0-based indices for triangle vertices)
-                if (parts.length >= 3) {
-                    int p1 = Integer.parseInt(parts[0]);
-                    int p2 = Integer.parseInt(parts[1]);
-                    int p3 = Integer.parseInt(parts[2]);
-                    result.add(new int[]{p1, p2, p3});
-                }
-            }
-        }
-        catch (Exception e) {
-            // Error loading mesh
-        }
-        return result;
-    }
-
-    // Helper class for sorting triangles by depth
-    private static class Triangle {
-        int[] indices;
-        double avgDepth;
-        Triangle(int[] indices, double avgDepth) {
-            this.indices = indices;
-            this.avgDepth = avgDepth;
-        }
-    }
-
     // MAIN GRAPHICS METHOD
-    // MAIN GRAPHICS METHOD
-
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         g.setColor(Color.BLACK);
         g.fillRect(0,0,getWidth(),getHeight());// background is black
-        
-        // Render mesh with painter's algorithm (back-to-front)
-        if (mesh != null && !mesh.isEmpty()) {
-            List<Triangle> sortedTriangles = new ArrayList<>();
-            
-            // Calculate average depth for each triangle
-            for (int[] face:mesh) {
-                if (face[0]>=0 && face[0]<points.size() && face[1]>=0 && face[1]<points.size() && face[2]>=0 && face[2]<points.size()) {
-                    Vector p1=points.get(face[0]);
-                    Vector p2=points.get(face[1]);
-                    Vector p3=points.get(face[2]);
-                    Vector camToP1=p1.subtract(camera.getPosition());
-                    Vector camToP2=p2.subtract(camera.getPosition());
-                    Vector camToP3=p3.subtract(camera.getPosition());
+        g.setColor(Color.WHITE); // points are all white
+        for (Vector point:points) {
+            double[] coords=camera.project(point,getWidth(),getHeight());
+            if (coords!=null) { g.fillOval((int)(coords[0]+panX)-2,(int)(coords[1]+panY)-2,size,size); }
+        }
 
-
-                    double depth=(camToP1.magnitude()+camToP2.magnitude()+camToP3.magnitude())/3.0;
-                    sortedTriangles.add(new Triangle(face,depth));
-                }
-                // Display stats
-                g.setColor(Color.WHITE);
-                g.drawString("Points: "+points.size(),10,20);
-                g.drawString("Triangles: "+mesh.size(),10,40);
-                g.drawString(String.format("Camera xyz: (%.4f, %.4f, %.4f)", camera.getPosition().getx(), camera.getPosition().gety(), camera.getPosition().getz()), 10, 60);
-
-                g.drawString(String.format("Camera A-A: (%.4f, %.4f)", Math.toDegrees(theta), Math.toDegrees(phi)), 10, 80);
-                g.drawString(String.format("Camera radius: %.4f", radius),10,100);
-                g.drawString(String.format("Origin: (%.2f, %.2f)",panX, panY),10,120);
-            }
-
-            
-
-            // Sort by depth (furthest first)
-            sortedTriangles.sort(Comparator.comparingDouble((Triangle t) -> t.avgDepth).reversed());
-            
-            // Draw each triangle
-            for (Triangle tri : sortedTriangles) {
-                int[] face = tri.indices;
-                double[] c1 = camera.project(points.get(face[0]), getWidth(), getHeight());
-                double[] c2 = camera.project(points.get(face[1]), getWidth(), getHeight());
-                double[] c3 = camera.project(points.get(face[2]), getWidth(), getHeight());
-                
-                if (c1 != null && c2 != null && c3 != null) {
-                    // Calculate surface normal for lighting
-                    Vector p1 = points.get(face[0]);
-                    Vector p2 = points.get(face[1]);
-                    Vector p3 = points.get(face[2]);
-                    
-                    Vector v1 = p2.subtract(p1);
-                    Vector v2 = p3.subtract(p1);
-                    Vector normal = v1.cross(v2).normalize();
-                    
-                    // Simple directional lighting
-                    Vector lightDir = new Vector(0.5, -0.5, -0.7).normalize();
-                    double lightIntensity = Math.max(0.2, Math.abs(normal.dot(lightDir)));
-                    
-                    int gray = (int)(lightIntensity * 200);
-                    g.setColor(new Color(gray, gray, gray));
-                    
-                    int[] xPoints = {(int)(c1[0] + panX), (int)(c2[0] + panX), (int)(c3[0] + panX)};
-                    int[] yPoints = {(int)(c1[1] + panY), (int)(c2[1] + panY), (int)(c3[1] + panY)};
-                    g.fillPolygon(xPoints, yPoints, 3);
-                    // Optional: draw triangle edges for wireframe effect
-                    // g.setColor(Color.DARK_GRAY);
-                    // g.drawPolygon(xPoints, yPoints, 3);
+        g.setColor(Color.WHITE); //lines also in white, change if wanted
+        for (int[] line: lines) {
+            if (line[0]>=0 && line[0]<points.size() && line[1]>=0 && line[1]<points.size()) {
+                double[] c1=camera.project(points.get(line[0]),getWidth(),getHeight());
+                double[] c2=camera.project(points.get(line[1]),getWidth(),getHeight());
+                if (c1!=null && c2!=null) {
+                    g.drawLine((int)(c1[0]+panX), (int)(c1[1]+panY), (int)(c2[0]+panX), (int)(c2[1]+panY));
                 }
             }
         }
-
+        //
+        // display stats: number of points, then xyz, a-a, radius for a-a for the camera
+        g.drawString("Points: "+points.size(),10,20);
+        g.drawString(String.format("Camera xyz: (%.4f, %.4f, %.4f)", camera.getPosition().getx(), camera.getPosition().gety(), camera.getPosition().getz()), 10, 40);
+        g.drawString(String.format("Camera A-A: (%.4f, %.4f)", Math.toDegrees(theta), Math.toDegrees(phi)), 10, 60);
+        g.drawString(String.format("Camera radius: %.4f", radius),10,80);
+        g.drawString(String.format("Origin: (%.2f, %.2f)",panX, panY),10,100);
     }
-
-
 
     public void incX(int dir) { // for rotation, height y is fixed
         theta+=dir*0.05;
@@ -374,7 +286,7 @@ public class Viewer extends JPanel implements ActionListener {
         double k=1.0+(dir*-0.04);
         double rp=radius*k;
         // limits to how far camera can zoom out. Can comment out if wanted
-        if (rp>100000.0 || rp<0.01) {return;}
+        if (rp>80.0 || rp<0.01) {return;}
         radius=rp; update(); 
     }
 
@@ -395,7 +307,7 @@ public class Viewer extends JPanel implements ActionListener {
     
     public static void main(String[] args) {
         JFrame frame=new JFrame("3D visualizer"); //title of program (top)
-        frame.add(new Viewer(POINTSFILE, CAMERAFILE, LINESFILE, MESHFILE)); // at top of this file, can customize
+        frame.add(new Viewer(POINTSFILE, CAMERAFILE, LINESFILE)); // at top of this file, can customize
         frame.setSize(800,600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
