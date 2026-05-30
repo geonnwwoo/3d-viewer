@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-
+//extracts images from a zip file
 public class Unzipper {
 
     //unzips the files that iphone shortcut has
