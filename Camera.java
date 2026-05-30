@@ -1,23 +1,38 @@
 package lhs.finalproject;
 
+//creates a camera in a 3D space for a 2D screen
 public class Camera {
     private Vector position;
     private double fov;
 
+    //creates a camera with a set position and field of view
     public Camera(Vector position, double fov) {
         this.position = position;
         this.fov = fov;
     }
+
+    //creates a default camera at a position and default field of view
     public Camera() {
         this(new Vector(0,5,0), 60); // Viewer.java overrides this im pretty sure
     }
 
-    public Vector getPosition() { return position; }
-    public double getFov() { return fov; }
+    //getter methods
+    public Vector getPosition() { 
+        return position; 
+    }
+    public double getFov() { 
+        return fov; 
+    }
 
-    public void setPosition(Vector position) { this.position = position; }
-    public void setFov(double fov) { this.fov = fov; }
+    //setter methods
+    public void setPosition(Vector position) { 
+        this.position = position; 
+    }
+    public void setFov(double fov) { 
+        this.fov = fov; 
+    }
 
+    //projects a 3D point on a 2D screen w/ perspective projection
     public double[] project(Vector point, int screenWidth, int screenHeight) {
         Vector forward=new Vector(0,0,0).subtract(this.position).normalize();
         Vector worldUp=new Vector(0,1,0);
