@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Comparator;
 
+//renders a 3D voxel model with renderer that is interactive
 public class Viewer extends JPanel {
 
     private static final double ROT_SPEED  = 2.2;
@@ -43,6 +44,7 @@ public class Viewer extends JPanel {
     private boolean isHPressed = false, isJPressed = false, isKPressed = false, isLPressed = false,
             isPlusPressed = false, isMinusPressed = false, isOPressed = false;
 
+    //constructs a Viewer with a specific voxel grid
     public Viewer(float[][][] voxelGrid) {
         points = new ArrayList<>();
         mesh = new ArrayList<>();
@@ -280,7 +282,7 @@ public class Viewer extends JPanel {
         }
     }
 
-    // --- Rendering ---
+    // renders the 3D model, camera statistics, and lighting effects on the panel
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -357,6 +359,7 @@ public class Viewer extends JPanel {
         }
     }
 
+    //resets camera position, zoom, rotation, and panning offset to default values
     public void reset() {
         Vector resetPos = initialCamPos;
         camera.setPosition(resetPos);
@@ -374,6 +377,7 @@ public class Viewer extends JPanel {
         panYVel = 0;
     }
 
+    //starts the image upload server, the images are processed, the 3d window is launched
     public static void main(String[] args) {
         try {
             BatchImageServer.startServer();
